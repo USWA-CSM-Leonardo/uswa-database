@@ -451,33 +451,32 @@
         
         // Render personnel table
         async function renderPersonnel(divisionFilter = 'all') {
-            const data = await fetchData('Personnel');
-            const filtered = divisionFilter === 'all' ? data : data.filter(p => p.Division === divisionFilter);
-            const tbody = document.getElementById('personnelTable');
-            tbody.innerHTML = '';
-
-            filtered.forEach(person => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${person.ID || 'N/A'}</td>
-                    <td>${person.Name || 'N/A'}</td>
-                    <td>${person.Rank || 'N/A'}</td>
-                    <td>${person.Division || 'N/A'}</td>
-                    <td>${person.Status || 'Active'}</td>
-                    <td><button class="btn view-btn" data-id="${person.ID}">View</button></td>
-                `;
-            });
-
-        // Attach click listeners to all view buttons
-        document.querySelectorAll('.view-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = button.getAttribute('data-id');
-                const person = filtered.find(p => p.ID === id);
-                if (person) {
-                    showPersonnelDetails(person);
-                }
-            });
-        });
+			const data = await fetchData('Personnel');
+			const filtered = divisionFilter === 'all' ? data : data.filter(p => p.Division === divisionFilter);
+			const tbody = document.getElementById('personnelTable');
+			tbody.innerHTML = '';
+			
+			filtered.forEach(person => {
+				const row = tbody.insertRow();
+				row.innerHTML = `
+					<td>${person.ID || 'N/A'}</td>
+					<td>${person.Name || 'N/A'}</td>
+					<td>${person.Rank || 'N/A'}</td>
+					<td>${person.Division || 'N/A'}</td>
+					<td>${person.Status || 'Active'}</td>
+					<td><button class="btn view-btn" data-id="${person.ID}">View</button></td>
+				`;
+			});
+		// Attach click listeners to all view buttons AFTER rows are added
+		document.querySelectorAll('.view-btn').forEach(button => {
+			button.addEventListener('click', () => {
+				const id = button.getAttribute('data-id');
+				const person = filtered.find(p => p.ID === id);
+				if (person) {
+					showPersonnelDetails(person);
+				}
+			});
+		});
 
         // Update stats
         document.getElementById('totalPersonnel').textContent = filtered.length;
@@ -548,6 +547,22 @@
                 alert('Failed to add personnel. Check console for details.');
             }
         }
+		
+		function showPersonnelDetails(person) {
+			const container = document.getElementById('personnelDetails');
+			container.innerHTML = `
+				<p><strong>ID:</strong> ${person.ID || 'N/A'}</p>
+				<p><strong>Name:</strong> ${person.Name || 'N/A'}</p>
+				<p><strong>Rank:</strong> ${person.Rank || 'N/A'}</p>
+				<p><strong>Division:</strong> ${person.Division || 'N/A'}</p>
+				<p><strong>Status:</strong> ${person.Status || 'Active'}</p>
+				<p><strong>Discord ID:</strong> ${person.Discord || 'N/A'}</p>
+				<p><strong>Roblox Username:</strong> ${person.RobloxUsername || 'N/A'}</p>
+				<p><strong>Join Date:</strong> ${person.JoinDate || 'N/A'}</p>
+			`;
+			openModal('viewPersonnel');
+		}
+
 
         // Log Event form handler
         async function logEvent(event) {
