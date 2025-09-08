@@ -80,41 +80,54 @@ async function fetchAndRenderPersonnel() {
 
 // Function to handle adding new personnel
 async function addPersonnel(event) {
-    event.preventDefault(); // Prevent default form submission
+  event.preventDefault();
 
-    const name = document.getElementById('name').value;
-    const rank = document.getElementById('rank').value;
-    const division = document.getElementById('division').value;
-    const discord = document.getElementById('discord').value;
+  const name = document.getElementById('name').value.trim();
+  const rank = document.getElementById('rank').value;
+  const division = document.getElementById('division').value;
+  const discord = document.getElementById('discord').value.trim();
+  const robloxUsername = document.getElementById('robloxUsername').value.trim();
 
-    const data = { name, rank, division, discord };
+  if (!name || !rank || !division || !discord || !robloxUsername) {
+    alert("Please fill in all fields.");
+    return;
+  }
 
-    try {
-        const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?sheet=Personnel`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+  // Prepare URL-encoded form data
+  const formData = new URLSearchParams();
+  formData.append('name', name);
+  formData.append('rank', rank);
+  formData.append('division', division);
+  formData.append('discord', discord);
+  formData.append('robloxUsername', robloxUsername);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+  try {
+    const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?sheet=Personnel`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: formData.toString()
+    });
 
-        const result = await response.json();
-        if (result.success) {
-            alert('Personnel added successfully!');
-            closeModal('addPersonnel');
-            document.querySelector('#addPersonnel form').reset(); // Clear form
-            fetchAndRenderPersonnel(); // Refresh the personnel list
-        } else {
-            alert('Error adding personnel: ' + result.message);
-        }
-    } catch (error) {
-        console.error('Error adding personnel:', error);
-        alert('Failed to add personnel. Please try again.');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Personnel added successfully!');
+      closeModal('addPersonnel');
+      document.querySelector('#addPersonnel form').reset();
+      fetchAndRenderPersonnel();
+    } else {
+      alert('Error adding personnel: ' + (result.message || JSON.stringify(result)));
+    }
+  } catch (error) {
+    console.error('Error adding personnel:', error);
+    alert('Failed to add personnel. Please try again.');
+  }
 }
 
 // --- Event Listeners ---
@@ -168,4 +181,5 @@ async function performSearch() {
         actionsCell.innerHTML = `<button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</button>`;
     });
 }
+
 
