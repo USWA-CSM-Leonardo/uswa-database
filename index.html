@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>USWA Military Database</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/build/sha256.min.js"></script>
     <style>
         /* Military Theme Variables */
         :root {
@@ -224,7 +225,7 @@
 
 		<button type="submit" class="btn" style="width: 100%;">Login</button>
 	</form>
-	<p id="loginError" style="color: red; display: none; margin-top: 10px;">Invalid username or password.</p>
+	<p id="loginError" style="color: red; display: none; margin-top: 10px;"></p>
 </div>
 
 <!-- Main App Container -->
@@ -421,33 +422,51 @@
 </div>
 
     <script>
-        // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
+        // IMPORTANT: Replace this with your actual Google Apps Script Web App URL for data fetching
         const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIDISO1xq82-2hvNKiilLBgDNIDNIIeqTgwqfLZ9_FDL_UPUOmW7CWYIKvgZl9jQ0/exec';
 		
-		// Hardcoded users: username => password
-		const users = {
-			'user1': 'password1',
-			'user2': 'password2',
-			// Add more users here
-		};
+        // IMPORTANT: Replace this with your actual Google Apps Script Web App URL for LOGIN
+        const APPS_SCRIPT_LOGIN_URL = 'https://script.google.com/macros/s/AKfycby60H3dgCH9keLVP5gK1tS-3C4NE9XxSEr5hcaSZfTAGJZksZLIfii9mZSb4IOm9ING/exec';
 
-		document.getElementById('loginForm').addEventListener('submit', function(event) {
-			event.preventDefault();
-			const username = this.username.value.trim();
-			const password = this.password.value;
+        // Login form submission handler
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const username = this.username.value.trim();
+            const password = this.password.value;
 
-			if (users[username] && users[username] === password) {
-				// Successful login
-				document.getElementById('login').style.display = 'none';
-				document.getElementById('app').style.display = 'block';
-				// Initialize your app here if needed
-				renderPersonnel(); // or any other init functions
-			} else {
-				// Show error
-				const errorEl = document.getElementById('loginError');
-				errorEl.style.display = 'block';
-			}
-		});
+            // Hash the password before sending it to the Apps Script backend
+            const passwordHash = sha256(password);
+
+            try {
+                const response = await fetch(APPS_SCRIPT_LOGIN_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, passwordHash }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const result = await response.json();
+                const errorEl = document.getElementById('loginError');
+
+                if (result.success) {
+                    // Successful login
+                    errorEl.style.display = 'none'; // Hide any previous error
+                    document.getElementById('login').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    
+                    // Initialize your app after successful login
+                    await renderPersonnel(); 
+                } else {
+                    // Show error
+                    errorEl.textContent = result.message || 'Invalid username or password.';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                const errorEl = document.getElementById('loginError');
+                errorEl.textContent = 'Could not connect to login server. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        });
 
 
         // Modal functions
@@ -500,9 +519,9 @@
 			const tbody = document.getElementById('personnelTable');
 			tbody.innerHTML = '';
 			
-			filtered.forEach(person => {
-				const idNumber = person.ID || (index + 1);
-				const formattedId = `USWA-${String(idNumber).padStart(3, '0')}`;
+			filtered.forEach((person, index) => { // Added 'index' parameter here
+				const idNumber = person.ID || (index + 1); // Use existing ID or generate from index
+				const formattedId = `USWA-${String(idNumber).padStart(3, '0')}`; // Format with leading zeros
 				const row = tbody.insertRow();
 				row.innerHTML = `
 					<td>${formattedId}</td>
@@ -655,14 +674,12 @@
             });
         });
 
-        // Init on load
+        // Init on load (only attach form handlers, renderPersonnel is called after login)
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('addPersonnelForm').addEventListener('submit', addPersonnel);
             document.getElementById('logEventForm').addEventListener('submit', logEvent);
-            await renderPersonnel();
+            // renderPersonnel() is now called only after successful login
         });
     </script>
 </body>
 </html>
-</content>
-</create_file>
