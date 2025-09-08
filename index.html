@@ -290,6 +290,16 @@
     </div>
 
     <!-- Modals -->
+    <div id="viewPersonnel" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('viewPersonnel')">&times;</span>
+            <h2>Personnel Details</h2>
+            <div id="personnelDetails">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
     <div id="addPersonnel" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('addPersonnel')">&times;</span>
@@ -430,6 +440,7 @@
             const filtered = divisionFilter === 'all' ? data : data.filter(p => p.Division === divisionFilter);
             const tbody = document.getElementById('personnelTable');
             tbody.innerHTML = '';
+
             filtered.forEach(person => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
@@ -438,15 +449,26 @@
                     <td>${person.Rank || 'N/A'}</td>
                     <td>${person.Division || 'N/A'}</td>
                     <td>${person.Status || 'Active'}</td>
-                    <td><button class="btn">View</button></td>
+                    <td><button class="btn view-btn" data-id="${person.ID}">View</button></td>
                 `;
             });
 
-            // Update stats
-            document.getElementById('totalPersonnel').textContent = filtered.length;
-            document.getElementById('activePersonnel').textContent = filtered.filter(p => p.Status === 'Active').length;
-            document.getElementById('deploymentPersonnel').textContent = filtered.filter(p => p.Status === 'On Deployment').length;
-            document.getElementById('newRecruits').textContent = '0'; // Calculate if needed
+        // Attach click listeners to all view buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                const person = filtered.find(p => p.ID === id);
+                if (person) {
+                    showPersonnelDetails(person);
+                }
+            });
+        });
+
+        // Update stats
+        document.getElementById('totalPersonnel').textContent = filtered.length;
+        document.getElementById('activePersonnel').textContent = filtered.filter(p => p.Status === 'Active').length;
+        document.getElementById('deploymentPersonnel').textContent = filtered.filter(p => p.Status === 'On Deployment').length;
+        document.getElementById('newRecruits').textContent = '0'; // Adjust if you track this
         }
 
         // Perform search
