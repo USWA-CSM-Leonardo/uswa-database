@@ -168,3 +168,4 @@ async function performSearch() {
         actionsCell.innerHTML = `<button class="btn" style="padding: 5px 10px; font-size: 0.8rem;">View</button>`;
     });
 }
+
