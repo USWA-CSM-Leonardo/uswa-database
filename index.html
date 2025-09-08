@@ -433,7 +433,22 @@
                 return [];
             }
         }
-
+        
+        function showPersonnelDetails(person) {
+          const container = document.getElementById('personnelDetails');
+          container.innerHTML = `
+            <p><strong>ID:</strong> ${person.ID || 'N/A'}</p>
+            <p><strong>Name:</strong> ${person.Name || 'N/A'}</p>
+            <p><strong>Rank:</strong> ${person.Rank || 'N/A'}</p>
+            <p><strong>Division:</strong> ${person.Division || 'N/A'}</p>
+            <p><strong>Status:</strong> ${person.Status || 'Active'}</p>
+            <p><strong>Discord ID:</strong> ${person.DiscordID || person.Discord || 'N/A'}</p>
+            <p><strong>Roblox Username:</strong> ${person.RobloxUsername || 'N/A'}</p>
+            <p><strong>Join Date:</strong> ${person.JoinDate || 'N/A'}</p>
+          `;
+          openModal('viewPersonnel');
+        }
+        
         // Render personnel table
         async function renderPersonnel(divisionFilter = 'all') {
             const data = await fetchData('Personnel');
