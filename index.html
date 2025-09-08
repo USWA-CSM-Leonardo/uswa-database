@@ -212,6 +212,23 @@
     </style>
 </head>
 <body>
+<!-- Login Page -->
+<div id="login" style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+	<h2>USWA Database Login</h2>
+	<form id="loginForm">
+		<label for="username">Username</label>
+		<input type="text" id="username" name="username" required style="width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 12px;">
+
+		<label for="password">Password</label>
+		<input type="password" id="password" name="password" required style="width: 100%; padding: 8px; margin-top: 4px; margin-bottom: 12px;">
+
+		<button type="submit" class="btn" style="width: 100%;">Login</button>
+	</form>
+	<p id="loginError" style="color: red; display: none; margin-top: 10px;">Invalid username or password.</p>
+</div>
+
+<!-- Main App Container -->
+<div id="app" style="display: none;">
     <header>
         <h1>United States Western Army (USWA) Military Database</h1>
     </header>
@@ -401,10 +418,37 @@
             </form>
         </div>
     </div>
+</div>
 
     <script>
         // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
         const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxIDISO1xq82-2hvNKiilLBgDNIDNIIeqTgwqfLZ9_FDL_UPUOmW7CWYIKvgZl9jQ0/exec';
+		
+		// Hardcoded users: username => password
+		const users = {
+			'user1': 'password1',
+			'user2': 'password2',
+			// Add more users here
+		};
+
+		document.getElementById('loginForm').addEventListener('submit', function(event) {
+			event.preventDefault();
+			const username = this.username.value.trim();
+			const password = this.password.value;
+
+			if (users[username] && users[username] === password) {
+				// Successful login
+				document.getElementById('login').style.display = 'none';
+				document.getElementById('app').style.display = 'block';
+				// Initialize your app here if needed
+				renderPersonnel(); // or any other init functions
+			} else {
+				// Show error
+				const errorEl = document.getElementById('loginError');
+				errorEl.style.display = 'block';
+			}
+		});
+
 
         // Modal functions
         function openModal(modalId) {
@@ -457,9 +501,11 @@
 			tbody.innerHTML = '';
 			
 			filtered.forEach(person => {
+				const idNumber = person.ID || (index + 1);
+				const formattedId = `USWA-${String(idNumber).padStart(3, '0')}`;
 				const row = tbody.insertRow();
 				row.innerHTML = `
-					<td>${person.ID || 'N/A'}</td>
+					<td>${formattedId}</td>
 					<td>${person.Name || 'N/A'}</td>
 					<td>${person.Rank || 'N/A'}</td>
 					<td>${person.Division || 'N/A'}</td>
