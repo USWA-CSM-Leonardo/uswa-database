@@ -437,36 +437,33 @@
             // Hash the password before sending it to the Apps Script backend
             const passwordHash = sha256(password);
 
-            try {
-                const response = await fetch(APPS_SCRIPT_LOGIN_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ username, passwordHash }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-
-                const result = await response.json();
-                const errorEl = document.getElementById('loginError');
-
-                if (result.success) {
-                    // Successful login
-                    errorEl.style.display = 'none'; // Hide any previous error
-                    document.getElementById('login').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    
-                    // Initialize your app after successful login
-                    await renderPersonnel(); 
-                } else {
-                    // Show error
-                    errorEl.textContent = result.message || 'Invalid username or password.';
-                    errorEl.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                const errorEl = document.getElementById('loginError');
-                errorEl.textContent = 'Could not connect to login server. Please try again.';
-                errorEl.style.display = 'block';
-            }
-        });
+			try {
+				const response = await fetch(APPS_SCRIPT_LOGIN_URL, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: new URLSearchParams({ username, passwordHash })
+				});
+				const result = await response.json();
+				const errorEl = document.getElementById('loginError');
+				if (result.success) {
+					// Successful login
+					errorEl.style.display = 'none'; // Hide any previous error
+					document.getElementById('login').style.display = 'none';
+					document.getElementById('app').style.display = 'block';
+					
+					// Initialize your app after successful login
+					await renderPersonnel(); 
+				} else {
+					// Show error
+					errorEl.textContent = result.message || 'Invalid username or password.';
+					errorEl.style.display = 'block';
+				}
+			} catch (error) {
+				console.error('Login error:', error);
+				const errorEl = document.getElementById('loginError');
+				errorEl.textContent = 'Could not connect to login server. Please try again.';
+				errorEl.style.display = 'block';
+			}
 
 
         // Modal functions
